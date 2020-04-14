@@ -4,3 +4,4 @@ import "./index.css";
 import { Main } from "./Main.jsx";
 
 ReactDOM.render(<Main />, document.getElementById("app"));
+console.log("Loaded")

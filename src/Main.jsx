@@ -1,13 +1,15 @@
 import React from "react";
-import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
-import { Orbits } from "./orbits/orbits.jsx";
+import { HashRouter, Switch, Route, Link } from "react-router-dom";
 import './main.css'
+import { Orbits } from "./orbits/orbits.jsx";
 import { Quadtree } from "./quadtree/quadtree.jsx";
+import { Maze } from "./maze/maze.jsx";
+import { Sorting } from "./sorting/sorting.jsx";
 
 export class Main extends React.Component {
 	render() {
 		return (
-			<Router>
+			<HashRouter basename="/">
 				<Switch>
 
 					<Route exact path="/">
@@ -27,6 +29,22 @@ export class Main extends React.Component {
 									</div>
 								</Link>
 							</div>
+
+							<div class='tile' id='sorting'>
+								<Link class="link" to="/sorting">
+									<div class='inside'>
+										Sorting
+									</div>
+								</Link>
+							</div>
+
+							<div class='tile' id='maze'>
+								<Link class="link" to="/maze">
+									<div class='inside'>
+										Maze
+									</div>
+								</Link>
+							</div>
 						</div>
 					</Route>
 
@@ -37,8 +55,17 @@ export class Main extends React.Component {
 					<Route path="/quadtree">
 						<Quadtree />
 					</Route>
+
+					<Route path="/maze">
+						<Maze />
+					</Route>
+
+					<Route path="/sorting">
+						<Sorting />
+					</Route>
+
 				</Switch>
-			</Router>
+			</HashRouter>
 
 		);
 	}

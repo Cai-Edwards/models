@@ -4,7 +4,6 @@ import { init } from './quadtree';
 export class Quadtree extends React.Component {
     constructor(props) {
         super(props);
-
     }
 
     componentDidMount() {

@@ -60,7 +60,7 @@ export class Orbits extends React.Component {
 		return (
 			<div id="outer">
 				<div id='canvas'>
-					<canvas id="orbit" width={1600} height={800}></canvas>
+					<canvas id="orbit" width={window.innerWidth} height={window.innerHeight / 1.5}></canvas>
 				</div>
 
 				<button onClick={this.handleRender}>Stop/Start</button>
