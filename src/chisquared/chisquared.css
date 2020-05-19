@@ -1,0 +1,44 @@
+html {
+    padding: 10px;
+}
+
+td input::-webkit-outer-spin-button,
+td input::-webkit-inner-spin-button {
+    /* display: none; <- Crashes Chrome on hover */
+    -webkit-appearance: none;
+    margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+}
+
+td input[type=number] {
+    -moz-appearance:textfield; /* Firefox */
+}
+
+
+table {
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+table, td {
+    border: 1px solid black;
+    width: 147px;
+    background-color: rgb(0, 0, 0, 0.1);
+}
+
+.category {
+    color: rgb(80, 16, 16);
+}
+
+#warning {
+    color: red;
+}
+
+#input-boxes {
+    width: 300px;
+    display: inline-block;
+}
+
+#input-boxes input {
+    float: right;
+    clear: right;
+}

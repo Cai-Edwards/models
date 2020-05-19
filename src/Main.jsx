@@ -5,6 +5,8 @@ import { Orbits } from "./orbits/orbits.jsx";
 import { Quadtree } from "./quadtree/quadtree.jsx";
 import { Maze } from "./maze/maze.jsx";
 import { Sorting } from "./sorting/sorting.jsx";
+import { Collisions } from "./collsions/collisions.jsx";
+import { ChiSquared } from "./chisquared/chisquared.jsx";
 
 export class Main extends React.Component {
 	render() {
@@ -45,6 +47,22 @@ export class Main extends React.Component {
 									</div>
 								</Link>
 							</div>
+
+							{/* <div class='tile' id='collisions'>
+								<Link class="link" to="/collisions">
+									<div class='inside'>
+										Collisions
+									</div>
+								</Link>
+							</div> */}
+
+							<div class='tile' id='chisquared'>
+								<Link class="link" to="/chisquared">
+									<div class='inside'>
+										Chi Squared
+									</div>
+								</Link>
+							</div>
 						</div>
 					</Route>
 
@@ -63,6 +81,16 @@ export class Main extends React.Component {
 					<Route path="/sorting">
 						<Sorting />
 					</Route>
+
+					{/* <Route path="/collisions">
+						<Collisions />
+					</Route> */}
+
+					<Route path="/chisquared">
+						<ChiSquared />
+					</Route>
+
+
 
 				</Switch>
 			</HashRouter>

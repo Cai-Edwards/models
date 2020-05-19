@@ -63,19 +63,20 @@ export function init() {
     sizex = 25;
     sizey = 10;
     speed = 100;
-    cursor_pos = (0, 0)
+
 
     ctx.lineWidth = 1;
     ctx.fillStyle = "red";
 
     generate();
-
 }
 
 export function generate() {
     maze = new Maze(sizex, sizey);
     w = Math.floor(width / maze.width);
     h = Math.floor(height / maze.height);
+    cursor_pos = [0, 0]
+
 
     draw();
 }
@@ -103,7 +104,7 @@ export async function depth_first() {
         }
 
         let current = nodes[nodes.length - 1];
-        cursor_pos = (current.x, current.y);
+        cursor_pos = [current.x, current.y];
 
         current.travelled = true;
 
@@ -155,6 +156,84 @@ export async function depth_first() {
 
 }
 
+export async function prims() {
+    stop = 0;
+
+    let nodes = [maze.grid[0][0]];
+
+    while (nodes.length !== 0) {
+
+        if (stop) {
+            return;
+        }
+
+        let idx = Math.floor(Math.random() * nodes.length)
+        let current = nodes[idx];
+
+        cursor_pos = [current.x, current.y];
+
+        current.travelled = true;
+
+        let dir = maze.available(current);
+
+        if (!dir.length) {
+            nodes.pop();
+        } else {
+            let choice = dir[Math.floor(Math.random() * dir.length)];
+
+            switch (choice) {
+                case "n":
+                    current.walls &= 0b0111;
+                    o = maze.grid[current.y - 1][current.x];
+                    o.walls &= 0b1101;
+                    break;
+
+                case "e":
+                    current.walls &= 0b1011;
+                    o = maze.grid[current.y][current.x + 1];
+                    o.walls &= 0b1110;
+                    break;
+
+                case "s":
+                    current.walls &= 0b1101;
+                    o = maze.grid[current.y + 1][current.x];
+                    o.walls &= 0b0111;
+                    break;
+
+                case "w":
+                    current.walls &= 0b1110;
+                    o = maze.grid[current.y][current.x - 1];
+                    o.walls &= 0b1011;
+                    break;
+            }
+
+            nodes.push(o);
+        }
+
+        if (dir.length === 1 || surrounding_travelled(current)) {
+            nodes.splice(idx, 1);
+        }
+
+        if (step) {
+            await draw();
+        }
+
+    }
+
+    draw();
+}
+
+function surrounding_travelled(node) {
+    let x = node.x;
+    let y = node.y;
+
+    let n = maze.grid[y - 1][x].travelled || true;
+    let e = maze.grid[y][x + 1].travelled || true;
+    let s = maze.grid[y + 1][x].travelled || true;
+    let w = maze.grid[y][x - 1].travelled || true;
+
+    return (n && e && s && w);
+}
 
 function draw() {
 
@@ -196,7 +275,7 @@ function draw() {
             ctx.closePath();
 
             ctx.beginPath();
-            ctx.rect(cursor_pos[0], cursor_pos[1], w, h);
+            ctx.rect(cursor_pos[0] * w, cursor_pos[1] * h, w, h);
             ctx.fill();
             ctx.closePath();
 

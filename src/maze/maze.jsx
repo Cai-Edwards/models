@@ -1,5 +1,5 @@
 import React from 'react';
-import { init, update, depth_first, end, generate } from './maze';
+import { init, update, depth_first, end, generate, prims } from './maze';
 
 export class Maze extends React.Component {
     constructor(props) {
@@ -49,6 +49,7 @@ export class Maze extends React.Component {
 
                 <button onClick={generate}>Generate</button>
                 <button onClick={depth_first}>Depth first</button>
+                <button onClick={prims}>Prims</button>
                 <button onClick={end}>Stop</button>
 
                 <br />
