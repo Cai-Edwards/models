@@ -380,6 +380,8 @@ export class ChiSquared extends React.Component {
 
         return (
             <div id="outer">
+                <h4>Please only increment/decrement the row and column by one else it will break</h4>
+
                 <div id="input-boxes">
                     <label>
                         Rows
