@@ -1,4 +1,4 @@
-let c, ctx, height, width, maze, o, prev, cursor_pos, stop, step, sizex, sizey, w, h, speed;
+let c, ctx, height, width, maze, o, prev, cursor_pos, stop, step, sizex, sizey, w, h, speed, frontier;
 
 class Maze {
     constructor(w, h) {
@@ -27,7 +27,7 @@ class Maze {
 
     available(current) {
         let cx = current.x;
-        let cy = current.y
+        let cy = current.y;
 
         let possible = current.walls & ~current.edges;
         let n = [];
@@ -39,6 +39,23 @@ class Maze {
         if ((possible & 0b0010) && (!this.grid[cy + 1][cx].travelled)) { n.push("s") };
 
         if ((possible & 0b0001) && (!this.grid[cy][cx - 1].travelled)) { n.push("w") };
+
+        return n;
+    };
+
+    find_travelled(current) {
+        let cx = current.x;
+        let cy = current.y;
+
+        let n = [];
+
+        if ((~current.edges & 0b1000) && (this.grid[cy - 1][cx].travelled)) { n.push("n") };
+
+        if ((~current.edges & 0b0100) && (this.grid[cy][cx + 1].travelled)) { n.push("e") };
+
+        if ((~current.edges & 0b0010) && (this.grid[cy + 1][cx].travelled)) { n.push("s") };
+
+        if ((~current.edges & 0b0001) && (this.grid[cy][cx - 1].travelled)) { n.push("w") };
 
         return n;
     };
@@ -63,6 +80,7 @@ export function init() {
     sizex = 25;
     sizey = 10;
     speed = 100;
+    frontier = [];
 
 
     ctx.lineWidth = 1;
@@ -76,6 +94,7 @@ export function generate() {
     w = Math.floor(width / maze.width);
     h = Math.floor(height / maze.height);
     cursor_pos = [0, 0]
+    frontier = [];
 
 
     draw();
@@ -158,48 +177,49 @@ export async function depth_first() {
 
 export async function prims() {
     stop = 0;
+    let fr;
+    let current;
 
-    let nodes = [maze.grid[0][0]];
+    frontier = [maze.grid[0][1], maze.grid[1][0]];
+    maze.grid[0][0].travelled = true;
 
-    while (nodes.length !== 0) {
+    while (frontier.length !== 0) {
 
-        if (stop) {
+        if (stop) { 
             return;
         }
 
-        let idx = Math.floor(Math.random() * nodes.length)
-        let current = nodes[idx];
-
+        let idx = Math.floor(Math.random() * frontier.length);
+        current = frontier[idx];
         cursor_pos = [current.x, current.y];
 
         current.travelled = true;
 
-        let dir = maze.available(current);
+        let ava = maze.find_travelled(current);
+        let dir = ava[Math.floor(Math.random() * ava.length)];
 
-        if (!dir.length) {
-            nodes.pop();
+        if (!dir) {
+            frontier.splice(idx, 1);
         } else {
-            let choice = dir[Math.floor(Math.random() * dir.length)];
-
-            switch (choice) {
+            switch (dir) {
                 case "n":
                     current.walls &= 0b0111;
                     o = maze.grid[current.y - 1][current.x];
                     o.walls &= 0b1101;
                     break;
-
+    
                 case "e":
                     current.walls &= 0b1011;
                     o = maze.grid[current.y][current.x + 1];
                     o.walls &= 0b1110;
                     break;
-
+    
                 case "s":
                     current.walls &= 0b1101;
                     o = maze.grid[current.y + 1][current.x];
                     o.walls &= 0b0111;
                     break;
-
+    
                 case "w":
                     current.walls &= 0b1110;
                     o = maze.grid[current.y][current.x - 1];
@@ -207,32 +227,64 @@ export async function prims() {
                     break;
             }
 
-            nodes.push(o);
-        }
+            
 
-        if (dir.length === 1 || surrounding_travelled(current)) {
-            nodes.splice(idx, 1);
+            frontier.splice(idx, 1);
+
+            let to_add = maze.available(current);
+
+            for (let i = 0; i < to_add.length; i++) {
+                switch (to_add[i]) {
+                    case "n":
+                        fr = maze.grid[current.y - 1][current.x];
+                        if (!check_in(fr, frontier)) {
+                            frontier.push(fr);
+                        }
+                        
+                        break;
+
+                    case "e":
+                        fr = maze.grid[current.y][current.x + 1];
+
+                        if (!check_in(fr, frontier)) {
+                            frontier.push(fr);
+                        }
+                        break;
+
+                    case "s":
+                        fr = maze.grid[current.y + 1][current.x];
+
+                        if (!check_in(fr, frontier)) {
+                            frontier.push(fr);
+                        }
+                        break;
+
+                    case "w":
+                        fr = maze.grid[current.y][current.x - 1];
+
+                        if (!check_in(fr, frontier)) {
+                            frontier.push(fr);
+                        }
+                        break;
+                }
+            }       
         }
 
         if (step) {
             await draw();
         }
-
     }
 
     draw();
 }
 
-function surrounding_travelled(node) {
-    let x = node.x;
-    let y = node.y;
-
-    let n = maze.grid[y - 1][x].travelled || true;
-    let e = maze.grid[y][x + 1].travelled || true;
-    let s = maze.grid[y + 1][x].travelled || true;
-    let w = maze.grid[y][x - 1].travelled || true;
-
-    return (n && e && s && w);
+function check_in(val, arr) {
+    for (let k in arr) {
+        if (val === arr[k]) {
+            return true;
+        }
+    }
+    return false;
 }
 
 function draw() {
@@ -278,6 +330,17 @@ function draw() {
             ctx.rect(cursor_pos[0] * w, cursor_pos[1] * h, w, h);
             ctx.fill();
             ctx.closePath();
+
+            ctx.beginPath();
+            for (let val in frontier) {
+                val = frontier[val];
+                ctx.rect(val.x * w + 1, val.y * h + 1, w - 1, h - 1);
+            }
+            ctx.fillStyle = "pink";
+            ctx.fill();
+            ctx.closePath();
+
+            ctx.fillStyle = "red";
 
             resolve("Drawn");
         }, speed)
