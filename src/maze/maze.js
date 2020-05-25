@@ -1,4 +1,4 @@
-let c, ctx, height, width, maze, o, prev, cursor_pos, stop, step, sizex, sizey, w, h, speed, frontier;
+let c, ctx, height, width, maze, o, prev, cursor_pos, stop, step, sizex, sizey, w, h, speed, frontier, skip;
 
 class Maze {
     constructor(w, h) {
@@ -81,6 +81,7 @@ export function init() {
     sizey = 10;
     speed = 100;
     frontier = [];
+    skip = 1;
 
 
     ctx.lineWidth = 1;
@@ -100,11 +101,12 @@ export function generate() {
     draw();
 }
 
-export function update(x, y, p, s) {
+export function update(x, y, p, s, k) {
     sizex = x;
     sizey = y;
     speed = p;
     step = s;
+    skip = k;
 }
 
 export function end() {
@@ -113,6 +115,7 @@ export function end() {
 
 export async function depth_first() {
     stop = 0;
+    let n = 0;
 
     let nodes = [maze.grid[0][0]];
 
@@ -161,13 +164,14 @@ export async function depth_first() {
             }
 
             nodes.push(o);
-
-
         }
 
-        if (step) {
+        if (step && n % skip === 0) {
+            n = 0;
             await draw();
         }
+
+        n++;
 
     }
 
@@ -179,6 +183,7 @@ export async function prims() {
     stop = 0;
     let fr;
     let current;
+    let n = 0;
 
     frontier = [maze.grid[0][1], maze.grid[1][0]];
     maze.grid[0][0].travelled = true;
@@ -270,9 +275,11 @@ export async function prims() {
             }       
         }
 
-        if (step) {
+        if (step && n % skip === 0) {
             await draw();
         }
+
+        n++;
     }
 
     draw();
@@ -346,7 +353,4 @@ function draw() {
         }, speed)
 
     })
-
-
 }
-

@@ -8,6 +8,7 @@ export class Maze extends React.Component {
             width: 25,
             height: 10,
             speed: 100,
+            skip: 1,
             step: true
         }
 
@@ -33,7 +34,8 @@ export class Maze extends React.Component {
             this.state.width,
             this.state.height,
             this.state.speed,
-            this.state.step
+            this.state.step,
+            this.state.skip
         )
     }
 
@@ -82,6 +84,17 @@ export class Maze extends React.Component {
                         name="speed"
                         type="number"
                         value={this.state.speed}
+                        onChange={this.handleChange} />
+                </label>
+
+                <br />
+
+                <label>
+                    Skip
+                    <input
+                        name="skip"
+                        type="number"
+                        value={this.state.skip}
                         onChange={this.handleChange} />
                 </label>
 
