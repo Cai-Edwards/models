@@ -47,7 +47,6 @@ export class Maze extends React.Component {
         return (
             <div id="outer">
                 <h1>Maze</h1>
-                <canvas id="maze_canvas" width={window.innerWidth} height={Math.round(window.innerHeight / 1.3)}></canvas>
 
                 <button onClick={generate}>Generate</button>
                 <button onClick={depth_first}>Depth first</button>
@@ -108,6 +107,8 @@ export class Maze extends React.Component {
                         checked={this.state.step}
                         onChange={this.handleCheckboxChange} />
                 </label>
+
+                <canvas id="maze_canvas" width={window.innerWidth / 1.025} height={Math.round(window.innerHeight / 1.35)}></canvas>
 
             </div>
         )

@@ -117,7 +117,9 @@ export async function depth_first() {
     stop = 0;
     let n = 0;
 
+
     let nodes = [maze.grid[0][0]];
+    frontier = nodes;
 
     while (nodes.length !== 0) {
 
@@ -125,8 +127,10 @@ export async function depth_first() {
             return;
         }
 
+
+
         let current = nodes[nodes.length - 1];
-        cursor_pos = [current.x, current.y];
+
 
         current.travelled = true;
 
@@ -166,7 +170,9 @@ export async function depth_first() {
             nodes.push(o);
         }
 
-        if (step && n % skip === 0) {
+        if (step && n % skip === 0 && nodes.length !== 0) {
+            let k = nodes[nodes.length - 1]
+            cursor_pos = [k.x, k.y];
             n = 0;
             await draw();
         }
@@ -190,7 +196,7 @@ export async function prims() {
 
     while (frontier.length !== 0) {
 
-        if (stop) { 
+        if (stop) {
             return;
         }
 
@@ -212,19 +218,19 @@ export async function prims() {
                     o = maze.grid[current.y - 1][current.x];
                     o.walls &= 0b1101;
                     break;
-    
+
                 case "e":
                     current.walls &= 0b1011;
                     o = maze.grid[current.y][current.x + 1];
                     o.walls &= 0b1110;
                     break;
-    
+
                 case "s":
                     current.walls &= 0b1101;
                     o = maze.grid[current.y + 1][current.x];
                     o.walls &= 0b0111;
                     break;
-    
+
                 case "w":
                     current.walls &= 0b1110;
                     o = maze.grid[current.y][current.x - 1];
@@ -232,7 +238,7 @@ export async function prims() {
                     break;
             }
 
-            
+
 
             frontier.splice(idx, 1);
 
@@ -245,7 +251,7 @@ export async function prims() {
                         if (!check_in(fr, frontier)) {
                             frontier.push(fr);
                         }
-                        
+
                         break;
 
                     case "e":
@@ -272,7 +278,7 @@ export async function prims() {
                         }
                         break;
                 }
-            }       
+            }
         }
 
         if (step && n % skip === 0) {
@@ -299,6 +305,16 @@ function draw() {
     return new Promise(resolve => {
         setTimeout(() => {
             ctx.clearRect(0, 0, width, height)
+
+            ctx.beginPath();
+            for (let val in frontier) {
+                val = frontier[val];
+                ctx.rect(val.x * w, val.y * h, w, h);
+            }
+            ctx.fillStyle = "aqua";
+            ctx.fill();
+            ctx.closePath();
+
             ctx.beginPath();
 
 
@@ -335,19 +351,9 @@ function draw() {
 
             ctx.beginPath();
             ctx.rect(cursor_pos[0] * w, cursor_pos[1] * h, w, h);
-            ctx.fill();
-            ctx.closePath();
-
-            ctx.beginPath();
-            for (let val in frontier) {
-                val = frontier[val];
-                ctx.rect(val.x * w + 1, val.y * h + 1, w - 1, h - 1);
-            }
-            ctx.fillStyle = "pink";
-            ctx.fill();
-            ctx.closePath();
-
             ctx.fillStyle = "red";
+            ctx.fill();
+            ctx.closePath();
 
             resolve("Drawn");
         }, speed)

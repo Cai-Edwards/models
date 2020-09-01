@@ -36,7 +36,10 @@ export function chi_sq(freq, values) {
             let e = freq[i][k];
             let o = values[i][k];
 
-            sum += ((o - e) ** 2) / e
+            let cont = ((o - e) ** 2) / e
+
+            sum += cont
+            console.log(i, k, cont)
         }
     }
 
