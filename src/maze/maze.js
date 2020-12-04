@@ -1,4 +1,4 @@
-let c, ctx, height, width, maze, o, prev, cursor_pos, stop, step, sizex, sizey, w, h, speed, frontier, skip;
+let c, ctx, height, width, maze, o, prev, cursor_pos, stop, step, sizex, sizey, w, h, speed, frontier, skip, path, start, ends, possible;
 
 class Maze {
     constructor(w, h) {
@@ -43,6 +43,24 @@ class Maze {
         return n;
     };
 
+    connections(current) {
+        let cx = current.x;
+        let cy = current.y;
+
+        let possible = ~current.walls & ~current.edges;
+        let n = [];
+
+        if ((possible & 0b1000) && (!this.grid[cy - 1][cx].done)) { n.push(this.grid[cy - 1][cx]) };
+
+        if ((possible & 0b0100) && (!this.grid[cy][cx + 1].done)) { n.push(this.grid[cy][cx + 1]) };
+
+        if ((possible & 0b0010) && (!this.grid[cy + 1][cx].done)) { n.push(this.grid[cy + 1][cx]) };
+
+        if ((possible & 0b0001) && (!this.grid[cy][cx - 1].done)) { n.push(this.grid[cy][cx - 1]) };
+
+        return n;
+    }
+
     find_travelled(current) {
         let cx = current.x;
         let cy = current.y;
@@ -68,6 +86,11 @@ class Node {
         this.x = x;
         this.y = y;
         this.travelled = false;
+        this.travel = 100000;
+        this.done = false;
+        this.inlist = false;
+        this.prev = null;
+        this.g = 0;
     }
 }
 
@@ -82,6 +105,10 @@ export function init() {
     speed = 100;
     frontier = [];
     skip = 1;
+    path = [];
+    start = [0, 0]
+    ends = [0, 0]
+    possible = []
 
 
     ctx.lineWidth = 1;
@@ -96,7 +123,8 @@ export function generate() {
     h = Math.floor(height / maze.height);
     cursor_pos = [0, 0]
     frontier = [];
-
+    path = [];
+    possible = [];
 
     draw();
 }
@@ -182,6 +210,7 @@ export async function depth_first() {
     }
 
     draw();
+    console.log(astar());
 
 }
 
@@ -289,6 +318,75 @@ export async function prims() {
     }
 
     draw();
+    console.log(maze)
+    console.log(astar());
+}
+
+async function astar() {
+    let current_node = maze.grid[0][0]
+    current_node.travel = 0
+    current_node.g = 0
+    current_node.prev = -1
+    current_node.done = true
+
+    let end_node = maze.grid[maze.height - 1][maze.width - 1]
+    
+    let shortest;
+    let newnode;
+    let manhatten;
+    let cost;
+
+    while (true) {
+        let nodes = maze.connections(current_node)
+
+        nodes.forEach(node => {
+            manhatten = Math.abs(end_node.y - node.y) + Math.abs(end_node.x - node.x)
+            cost = current_node.g + manhatten * 10
+            node.g = current_node.g + 1
+
+            if (cost < node.travel) {
+                node.travel = cost
+                node.prev = current_node
+            }
+            
+            if (!node.inlist) {
+                possible.push(node);
+                node.inlist = true;
+            }
+            
+        })
+
+        shortest = 10000000000;
+        newnode = null;
+
+        possible.forEach(node => {
+            if (!node.done) {
+                if (node.travel <= shortest) {
+                    newnode = node;
+                }
+            }
+        })
+        
+        if (current_node == end_node) {
+            let trace = end_node;
+            while (trace.prev != -1) {
+                path.unshift([trace.x, trace.y]);
+                trace = trace.prev;
+            }
+
+            path.unshift([trace.x, trace.y]);
+
+            console.log(path)
+            await draw();
+            return path, end_node.g;
+        }
+        
+        newnode.done = true;
+        current_node = newnode;
+
+        await draw();
+    }
+
 }
 
 function check_in(val, arr) {
@@ -315,9 +413,49 @@ function draw() {
             ctx.fill();
             ctx.closePath();
 
+            if (path.length !== 0) {
+                ctx.beginPath();
+                ctx.strokeStyle = "red";
+                let prev = [0, 0]
+
+                ctx.moveTo((prev[0] * w) + w/2, (prev[1] * h) + h/2)
+
+                path.forEach(e => {
+                    ctx.lineTo((e[0] * w) + w/2, (e[1] * h) + h/2)
+                })
+
+                ctx.stroke();
+                ctx.closePath();
+
+            } else {
+                ctx.beginPath();
+                possible.forEach(e => {
+                    if (e.done == true) {
+                        ctx.rect(e.x * w, e.y * h, w, h);
+                    }
+                })
+
+                ctx.fillStyle = "lime";
+                ctx.fill();
+                ctx.closePath();
+
+                ctx.beginPath();
+                possible.forEach(e => {
+                    if (e.done == false) {
+                        ctx.rect(e.x * w, e.y * h, w, h);
+                    }
+                })
+
+                ctx.fillStyle = "aqua";
+                ctx.fill();
+
+                ctx.closePath();
+            }
+
+            
+
             ctx.beginPath();
-
-
+            ctx.strokeStyle = "black";
 
             for (let row of maze.grid) {
                 for (let node of row) {
@@ -354,6 +492,8 @@ function draw() {
             ctx.fillStyle = "red";
             ctx.fill();
             ctx.closePath();
+
+            
 
             resolve("Drawn");
         }, speed)
