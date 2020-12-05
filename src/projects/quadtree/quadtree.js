@@ -1,4 +1,4 @@
-class Quad {
+class Quadtree {
     constructor(boundary, capacity) {
         this.boundary = boundary;
         this.capacity = capacity;
@@ -33,10 +33,10 @@ class Quad {
         let w = this.boundary.w;
         let h = this.boundary.h;
 
-        this.ne = new Quad(new Rect(x - (w / 2), y - (h / 2), w / 2, h / 2), this.capacity);
-        this.nw = new Quad(new Rect(x + (w / 2), y - (h / 2), w / 2, h / 2), this.capacity);
-        this.se = new Quad(new Rect(x - (w / 2), y + (h / 2), w / 2, h / 2), this.capacity);
-        this.sw = new Quad(new Rect(x + (w / 2), y + (h / 2), w / 2, h / 2), this.capacity);
+        this.ne = new Quadtree(new Rect(x - (w / 2), y - (h / 2), w / 2, h / 2), this.capacity);
+        this.nw = new Quadtree(new Rect(x + (w / 2), y - (h / 2), w / 2, h / 2), this.capacity);
+        this.se = new Quadtree(new Rect(x - (w / 2), y + (h / 2), w / 2, h / 2), this.capacity);
+        this.sw = new Quadtree(new Rect(x + (w / 2), y + (h / 2), w / 2, h / 2), this.capacity);
     }
 
     draw() {
@@ -72,9 +72,18 @@ class Quad {
 }
 
 class Point {
-    constructor(x, y) {
+    constructor(x, y, r) {
         this.x = x;
         this.y = y;
+        this.r = r;
+    }
+
+    distance_to() {
+
+    }
+
+    collides() {
+
     }
 }
 
@@ -110,14 +119,13 @@ function add_point(e) {
 
 function draw() {
 
-    tree = new Quad(boundary, 1)
+    tree = new Quadtree(boundary, 1)
 
     system.forEach(e => {
         tree.insert(e);
     })
 
     tree.draw();
-
 
     requestAnimationFrame(draw);
 }

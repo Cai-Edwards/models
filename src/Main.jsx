@@ -1,12 +1,12 @@
 import React from "react";
 import { HashRouter, Switch, Route, Link } from "react-router-dom";
 import './main.css'
-import { Orbits } from "./orbits/orbits.jsx";
-import { Quadtree } from "./quadtree/quadtree.jsx";
-import { Maze } from "./maze/maze.jsx";
-import { Sorting } from "./sorting/sorting.jsx";
-import { Collisions } from "./collsions/collisions.jsx";
-import { ChiSquared } from "./chisquared/chisquared.jsx";
+import { Orbits } from "./projects/orbits/orbits.jsx";
+import { Quadtree } from "./projects/quadtree/quadtree.jsx";
+import { Maze } from "./projects/maze/maze.jsx";
+import { Sorting } from "./projects/sorting/sorting.jsx";
+import { Collisions } from "./projects/collsions/collisions.jsx";
+import { ChiSquared } from "./projects/chisquared/chisquared.jsx";
 
 export class Main extends React.Component {
 	render() {

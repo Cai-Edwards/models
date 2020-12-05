@@ -1,9 +1,9 @@
 import React from 'react';
-import { init, update, depth_first, end, generate, prims } from './maze';
+import { initialise, update_values, end, generate_maze, depth_first, prims, astar } from './main'
 
 export class Maze extends React.Component {
     constructor(props) {
-        super(props);
+        super();
         this.state = {
             width: 25,
             height: 10,
@@ -18,7 +18,7 @@ export class Maze extends React.Component {
     }
 
     componentDidMount() {
-        init();
+        initialise();
     }
 
     componentDidUpdate() {
@@ -30,9 +30,9 @@ export class Maze extends React.Component {
     }
 
     handleUpdate() {
-        update(
-            this.state.width,
+        update_values(
             this.state.height,
+            this.state.width,
             this.state.speed,
             this.state.step,
             this.state.skip
@@ -48,9 +48,14 @@ export class Maze extends React.Component {
             <div id="outer">
                 <h1>Maze</h1>
 
-                <button onClick={generate}>Generate</button>
+                <button onClick={generate_maze}>Generate</button>
+
                 <button onClick={depth_first}>Depth first</button>
                 <button onClick={prims}>Prims</button>
+
+                <button onClick={astar}>A*</button>
+
+
                 <button onClick={end}>Stop</button>
 
                 <br />
