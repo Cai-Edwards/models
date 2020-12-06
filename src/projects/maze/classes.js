@@ -80,6 +80,19 @@ export class Maze {
         return nodes;
     }
 
+    get_nodes() {
+        const nodes = [];
+
+        for (let row = 0; row < this.rows; row++) {
+
+            for (let column = 0; column < this.columns; column++) {
+                nodes.push(this.nodes[row][column]);
+            }
+        }
+
+        return nodes;
+    }
+
 
 }
 
@@ -88,6 +101,7 @@ export class Node {
 
         this.x = x;
         this.y = y;
+        this.colour = "white";
 
         /** [id, node, wall] */
         this.connections = [];
