@@ -26,6 +26,8 @@ let current_position;
 let stop;
 let size;
 
+let bias;
+
 /** Initialise starting variables */
 export function initialise() {
     c = document.getElementById('maze_canvas');
@@ -59,12 +61,12 @@ export async function generate_maze() {
     frontier = [];
     path = [];
     possible_nodes = [];
+    updated = [];
     size = ((maze.rows * maze.columns) ** 0.6);
-    updated = maze.get_nodes();
 
     ctx.clearRect(0, 0, canvas_width, canvas_height);
 
-    await draw();
+    draw_full();
 }
 
 /** Update the modifiable variables*/
@@ -101,59 +103,70 @@ export async function depth_first() {
     let n = 0;
     updated = [];
 
+    //Set starting node to (rx, ry)
+    let rx = Math.floor(Math.random() * (maze.columns - 1));
+    let ry = Math.floor(Math.random() * (maze.rows - 1));
 
-    let current_path = [maze.nodes[0][0]];
+    let current_path = [maze.nodes[ry][rx]];
     let current_node = current_path[current_path.length - 1];
 
     frontier = current_path;
 
+    //While there are still unvisited nodes.
     while (current_path.length !== 0) {
         if (stop) {
             return;
         }
 
-        if (step && n % skip == 0 && current_path.length !== 0) {
+        if (step && n % skip === 0 && current_path.length !== 0) {
             current_position = [current_node.x, current_node.y];
 
             n = 0;
             await draw();
         }
 
+        //Current node is set to the last one in the current path.
         current_node = current_path[current_path.length - 1];
 
+        //Set the current node to be visited.
         current_node.visited = true;
+
+        //Find all adjacent walls
         let connection = maze.connecting_walls(current_node, true);
         let options = [];
 
+        //Check if the connecting nodes have been visited before
         connection.forEach(e => {
             if (!e.visited) {
                 options.push(e);
             }
         })
 
+        //If there are no possible connecting nodes, remove it from the current path.
         if (!options.length) {
             current_path.pop();
             current_node.colour = "white"
             updated.push(current_node);
 
         } else {
+            //Select one of the connecting nodes by random.
             current_node.colour = "aqua"
             updated.push(current_node);
             let choice = options[Math.floor(Math.random() * options.length)];
 
+            //Remove the wall between them
             current_node.remove_wall(choice);
             choice.remove_wall(current_node);
 
+            //Add node to the path.
             current_path.push(choice);
-
         }
 
         n++;
 
     }
 
-    updated = maze.get_nodes();
-    draw();
+    await draw_full();
 }
 
 /** Prim's algorithm generation */
@@ -163,42 +176,50 @@ export async function prims() {
     let current_node;
     let n = 0;
 
-    maze.nodes[0][0].visited = true;
+    //Start at (0, 0)
+    //Set starting node to (rx, ry)
+    let rx = Math.floor(Math.random() * (maze.columns - 2));
+    let ry = Math.floor(Math.random() * (maze.rows - 2));
+    maze.nodes[ry][rx].visited = true;
 
-    frontier = [maze.nodes[0][1], maze.nodes[1][0]];
+    //Add adjacent nodes to frontier
+    //frontier = [maze.nodes[0][1], maze.nodes[1][0]];
+    frontier = [maze.nodes[ry][rx+1]];
 
     while (frontier.length !== 0) {
         if (stop) {
             return;
         }
 
+        
+
+        //Select a random node in the frontier
         let index = Math.floor(Math.random() * frontier.length);
         current_node = frontier[index];
 
-        if (step && n % skip == 0) {
-            current_position = [current_node.x, current_node.y];
-            n = 0;
-            await draw();
-        }
-
         current_node.visited = true;
 
+        //Find connecting walls
         let connection = maze.connecting_walls(current_node, true);
         let options = [];
 
+        //Check that the adjacent wall has already been visited.
         connection.forEach(e => {
             if (e.visited) {
                 options.push(e);
             }
         })
 
+        //If there are no possibiliies:
         if (!options.length) {
             let a = frontier.splice(index, 1);
             a.colour = "white"
             updated.push(a);
         } else {
+            //Select a random option
             let choice = options[Math.floor(Math.random() * options.length)];
 
+            //Remove the wall between them
             current_node.remove_wall(choice);
             choice.remove_wall(current_node);
 
@@ -208,8 +229,10 @@ export async function prims() {
             updated.push(choice)
             choice.colour = "white"
 
+            //remove node from frontier
             frontier.splice(index, 1);
 
+            //Add its connections to frontier
             connection.forEach(e => {
                 if (!e.visited && !check_in(e, frontier)) {
                     frontier.push(e);
@@ -217,13 +240,19 @@ export async function prims() {
                     e.colour = "aqua"
                 }
             })
+
+            if (step && n % skip === 0) {
+                current_position = [current_node.x, current_node.y];
+                n = 0;
+                await draw();
+            }
         }
 
         n++;
 
     }
 
-    draw();
+    await draw_full();
 
 }
 
@@ -253,7 +282,7 @@ export async function astar() {
             return;
         }
 
-        if (current_node == end_node) {
+        if (current_node === end_node) {
             let trace = end_node;
             while (trace.previous_node != -1) {
                 path.unshift([trace.x, trace.y]);
@@ -262,7 +291,7 @@ export async function astar() {
 
             path.unshift([trace.x, trace.y]);
 
-            await draw();
+            draw_full();
 
             draw_path();
 
@@ -310,7 +339,7 @@ export async function astar() {
             }
         })
 
-        if (newnode == null) {
+        if (newnode === null) {
             return "No route";
         }
 
@@ -330,7 +359,6 @@ export async function astar() {
 
         n++;
     }
-
 }
 
 function draw() {
@@ -414,5 +442,58 @@ function draw_path() {
     })
 
     ctx.stroke();
+    ctx.closePath();
+}
+
+async function draw_full() {
+
+    ctx.beginPath();
+
+    for (let row = 0; row < maze.rows; row++) {
+        for (let column = 0; column < maze.columns; column++) {
+            let node = maze.nodes[row][column];
+            
+
+            node.connections.forEach(e => {
+
+
+                let id = e[0]
+                let wall = e[2]
+
+                let x = pixel_width * node.x;
+                let y = pixel_height * node.y;;
+
+                if (wall) {
+                    switch (id) {
+                        case 0:
+                            ctx.moveTo(x, y);
+                            ctx.lineTo(x + pixel_width, y);
+                            break;
+
+                        case 1:
+                            ctx.moveTo(x + pixel_width, y);
+                            ctx.lineTo(x + pixel_width, y + pixel_height);
+                            break;
+
+                        case 2:
+                            ctx.moveTo(x + pixel_width, y + pixel_height);
+                            ctx.lineTo(x, y + pixel_height);
+                            break;
+
+                        case 3:
+                            ctx.moveTo(x, y + pixel_height);
+                            ctx.lineTo(x, y);
+                            break;
+                    }
+                }
+            });
+        }
+    }
+
+    ctx.rect(0, 0, maze.columns * pixel_width, maze.rows * pixel_height);
+
+    ctx.strokeStyle = "black";
+    ctx.stroke();
+
     ctx.closePath();
 }
